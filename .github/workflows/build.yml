@@ -1,4 +1,5 @@
-name: Build
+name: Build macOS ARM Public
+
 on:
   push:
   workflow_dispatch:
@@ -8,9 +9,9 @@ on:
     types: [published]
 
 jobs:
-  build-macos-arm:
+  build-macos-arm-public:
     name: Build macOS ARM
-    runs-on: macos-arm64
+    runs-on: macos-15
 
     steps:
       - name: Set MACOSX_DEPLOYMENT_TARGET
@@ -36,6 +37,13 @@ jobs:
 
       - name: Set cmake buildtype
         run: echo "cmake_buildtype=Release" >> $GITHUB_ENV
+
+      - name: Uninstall homebrew
+        run: |
+          curl -sfLO https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh
+          chmod +x ./uninstall.sh
+          sudo ./uninstall.sh --force
+          rm -f uninstall.sh
 
       - name: Checkout
         uses: actions/checkout@v5
@@ -72,6 +80,7 @@ jobs:
           -DBUILD_WERROR=ON
           -DUSE_BUNDLE=ON
           -DICU_ROOT="${{env.prefix_path}}"
+          -DAPPLE_DEVELOPER_ID=""
           -DARCH="${{env.arch}}"
           -DENABLE_SPOTIFY=$(test -f "${{env.prefix_path}}/lib/gstreamer-1.0/libgstspotify.dylib" && echo "ON" || echo "OFF")
           -DENABLE_SPARKLE=ON
